@@ -8,7 +8,7 @@ const Skills: React.FC = () => {
         Skills
       </h1>
       <p className="text-slate-500 mb-12">
-        프로덕션 환경에서 사용해본 기술들입니다.
+        지금까지 사용해본 기술들입니다.
       </p>
 
       <div className="space-y-12">
