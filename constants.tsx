@@ -140,7 +140,7 @@ export const EDUCATION: EducationItem[] = [
     category: 'Education'
   },
   {
-    institution: '정보처리기사',
+    institution: '정보처리기능사',
     degree: '한국산업인력공단',
     period: '2022.07.01',
     details: ['국가기술자격증 취득'],

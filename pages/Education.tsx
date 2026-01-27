@@ -11,6 +11,9 @@ const Education: React.FC = () => {
       <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-12">
         Education & Certs
       </h1>
+      <p className="text-slate-500 mb-12">
+        제가 해낸 교육과정/자격증 입니다.
+      </p>
 
       {/* Education Section */}
       <section className="mb-16">

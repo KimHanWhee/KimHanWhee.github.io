@@ -8,7 +8,7 @@ const Blog: React.FC = () => {
   return (
     <div className="pt-4 md:pt-10 animate-fade-in-up">
       <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2">
-        Writing
+        Blog <span className="text-sky-400">.</span>
       </h1>
       <p className="text-slate-500 mb-12">
         생각을 정리하고 배운 것을 공유합니다.

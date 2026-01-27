@@ -5,7 +5,7 @@ const Skills: React.FC = () => {
   return (
     <div className="pt-4 md:pt-10 animate-fade-in-up">
       <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2">
-        Skills
+        Skills <span className="text-sky-400">.</span>
       </h1>
       <p className="text-slate-500 mb-12">
         지금까지 사용해본 기술들입니다.
