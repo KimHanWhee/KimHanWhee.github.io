@@ -94,7 +94,7 @@ const Layout: React.FC = () => {
       {/* Minimal Footer */}
       <footer className="w-full max-w-3xl mx-auto px-6 py-10 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
         <div>
-          © {new Date().getFullYear()} Hanwhee Kim.
+          © 2025 Hanwhee Kim.
         </div>
         <div className="flex gap-4">
           <a href="https://github.com/KimHanWhee" className="hover:text-slate-600"><Github size={16} /></a>
