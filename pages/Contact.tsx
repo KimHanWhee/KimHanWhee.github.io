@@ -19,9 +19,8 @@ const Contact: React.FC = () => {
 
       <div className="prose prose-lg prose-slate text-slate-600 leading-relaxed mb-12">
         <p>
-          새로운 기회나 기술적인 이야기, 혹은 가벼운 커피챗도 언제나 환영합니다.
           <br />
-          궁금한 점이 있으시다면 편하게 연락주세요.
+          궁금한 점이 있으시다면 편하게 연락주세요💬
         </p>
       </div>
 
