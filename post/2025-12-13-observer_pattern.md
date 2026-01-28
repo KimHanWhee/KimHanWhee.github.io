@@ -1,6 +1,6 @@
 ---
 title: "...알림 설정까지.. 옵저버 패턴(Observer Pattern)"
-date: "2025-08-16"
+date: "2025-12-13"
 description: "옵저버 패턴에 대하여 간단하게 정리한 글입니다."
 tags: ["JAVA"]
 ---
