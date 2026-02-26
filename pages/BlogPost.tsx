@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { getPost } from '../utils/posts';
 import { ArrowLeft, Calendar, Tag, ChevronUp } from 'lucide-react';
+import Giscus from '@/components/Giscus';
 
 const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -120,6 +121,7 @@ const BlogPost: React.FC = () => {
            </Link>
         </div>
       </div>
+      <Giscus/>
     </div>
   );
 };
