@@ -29,8 +29,8 @@
   }
 }
 
-/* Prose code block customization */
-.prose :where(code):not(:where([class~="not-prose"] *)) {
+/* Prose inline code customization (pre 안 코드 블록 제외) */
+.prose :where(:not(pre) > code):not(:where([class~="not-prose"] *)) {
   color: var(--color-pink-500, #ec4899);
   background-color: var(--color-slate-100, #f1f5f9);
   padding: 0.25rem 0.4rem;
