@@ -1,0 +1,68 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-family-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto,
+    'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic',
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+
+  --color-primary: #1a1a1a;
+  --color-secondary: #3B82F6;
+  --color-background: #ffffff;
+  --color-mint: #e0f2fe;
+  --color-mint-dark: #0369a1;
+  --color-surface: #fafafa;
+  --color-text: #333333;
+
+  --animate-fade-in-up: fadeInUp 0.8s ease-out forwards;
+
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Prose code block customization */
+.prose :where(code):not(:where([class~="not-prose"] *)) {
+  color: var(--color-pink-500, #ec4899);
+  background-color: var(--color-slate-100, #f1f5f9);
+  padding: 0.25rem 0.4rem;
+  border-radius: 0.25rem;
+  font-weight: 600;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+
+/* Text Highlight Effect */
+.highlight {
+  background: linear-gradient(120deg, #e0f2fe 0%, #e0f2fe 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 40%;
+  background-position: 0 88%;
+  display: inline;
+  padding: 0 4px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
