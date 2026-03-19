@@ -36,7 +36,7 @@ function addIdsToHeadings(html: string): string {
         .replace(/\s+/g, "-")
         .replace(/[^\w가-힣-]/g, "");
       return `<h${level}${attrs} id="${id}">${content}</h${level}>`;
-    }
+    },
   );
 }
 
@@ -53,7 +53,7 @@ const TableOfContents: React.FC<{ headings: Heading[] }> = ({ headings }) => {
           setActiveId(visible[0].target.id);
         }
       },
-      { rootMargin: "-80px 0px -60% 0px", threshold: 0 }
+      { rootMargin: "-80px 0px -60% 0px", threshold: 0 },
     );
 
     headings.forEach(({ id }) => {
@@ -78,7 +78,9 @@ const TableOfContents: React.FC<{ headings: Heading[] }> = ({ headings }) => {
               href={`#${id}`}
               onClick={(e) => {
                 e.preventDefault();
-                document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+                document
+                  .getElementById(id)
+                  ?.scrollIntoView({ behavior: "smooth" });
               }}
               className={[
                 "block text-sm leading-snug transition-colors py-0.5 break-words",
@@ -129,7 +131,7 @@ const BlogPost: React.FC = () => {
             Back to Tech Notes
           </Link>
 
-          <h1 className="text-3xl md:text-5xl font-extrabold text-primary mb-8 leading-tight tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-primary mb-8 leading-tight tracking-tight">
             {post.title}
           </h1>
 
