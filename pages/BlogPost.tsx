@@ -164,7 +164,7 @@ const BlogPost: React.FC = () => {
         </aside>
 
         {/* Article */}
-        <div>
+        <div className="overflow-x-hidden">
           <article className="prose prose-lg prose-slate max-w-none prose-headings:font-bold prose-h2:text-primary prose-a:text-secondary prose-a:no-underline hover:prose-a:underline prose-img:rounded-xl prose-pre:bg-slate-900 prose-pre:text-slate-50 prose-pre:shadow-xl">
             <style>{`
               pre {
@@ -174,6 +174,7 @@ const BlogPost: React.FC = () => {
                 background-color: #1e293b !important;
                 font-family: 'JetBrains Mono', monospace !important;
                 overflow-x: auto;
+                max-width: 100%;
               }
               pre::before {
                 content: '';

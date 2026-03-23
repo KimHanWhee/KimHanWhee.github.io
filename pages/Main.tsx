@@ -61,8 +61,9 @@ const Main: React.FC = () => {
 
         <div className="flex flex-col">
           {PROJECTS.map((project, index) => (
-            <div
+            <Link
               key={project.id}
+              to="/Experience"
               className={`flex flex-col md:flex-row md:justify-between md:items-baseline py-5 ${
                 index !== PROJECTS.length - 1 ? "border-b border-slate-100" : ""
               } hover:bg-slate-50 transition-colors px-2 -mx-2 rounded-lg group`}
@@ -80,7 +81,7 @@ const Main: React.FC = () => {
                   {project.period}
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
 
           <div className="flex flex-col md:flex-row md:justify-between md:items-baseline py-5 border-t border-slate-100 px-2 -mx-2 text-slate-400">

@@ -66,3 +66,25 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* 모바일 가로 오버플로우 방지 */
+body {
+  overflow-x: hidden;
+}
+
+.prose img,
+.prose video,
+.prose iframe {
+  max-width: 100%;
+}
+
+.prose table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.prose pre code {
+  word-break: normal;
+  white-space: pre;
+}
