@@ -24,7 +24,7 @@ tags: ["JAVA"]
 - 새로운 옵저버 클래스를 추가할 수 있다. (OCP-개방 폐쇄 원칙)
 
 > 💡 **OCP(개방-폐쇄 원칙)?**
-> 
+>
 > 객체 지향 원리인 SOLID 방식 중 하나로, 확장에는 개방적이고 수정에는 폐쇄적인 원칙을 의미한다.
 
 ## 단점
@@ -56,7 +56,7 @@ public enum GameEvent {
 
 ### 대상자(Subject)
 
-대상자는 게임 그 자체. 즉 게임 시스템을 예시로 구현하였다. 
+대상자는 게임 그 자체. 즉 게임 시스템을 예시로 구현하였다.
 
 - 대상자 인터페이스
 
@@ -147,7 +147,7 @@ public class Mid implements Laner {
 public class Main {
     public static void main(String[] args) {
         boolean isTimeToStop = false;
-        
+
         // 대상자와 옵저버 인스턴스를 생성한다.
         Game order = new System();
         Laner top = new Top();
@@ -162,7 +162,7 @@ public class Main {
         order.subscribe(mid);
         order.subscribe(bottom);
         order.subscribe(support);
-        
+
         // 실행(이벤트 발생)
         while(!isTimeToStop) {
             java.lang.System.out.println("===============Select Game Event===============");
@@ -188,7 +188,7 @@ public class Main {
 }
 ```
 
-**실행** 
+**실행**
 
 ```bash
 ===============Select Game Event===============
