@@ -9,7 +9,7 @@ tags: ["트러블슈팅", "Java", "Spring Boot", "Spring Cloud"]
 
 ## 문제 상황
 
-전 직장에서 운영하던 시스템은 **Spring Cloud Gateway** 기반의 API Gateway를 사용하고 있었다. Gateway의 라우팅 설정과 권한 설정은 아래와 같이 설정 파일로 관리되고 있었다.
+과거 운영하던 시스템은 **Spring Cloud Gateway** 기반의 API Gateway를 사용하고 있었다. Gateway의 라우팅 설정과 권한 설정은 아래와 같이 설정 파일로 관리되고 있었다.
 
 **application.yml (라우팅 설정 예시)**
 
