@@ -65,11 +65,11 @@ java.lang.OutOfMemoryError: Java heap space
 
 ## GC는 왜 메모리를 해제하지 못했을까
 
-### 추측 #1 - Off-heap 방식의 동작으로 인한 문제
+### 추측 #1 — Off-heap 방식의 동작으로 인한 문제
 
 첫 번째로 의심한 것은 ChronicleMap의 동작 방식(off-heap)이었다.
 
-> 💡**off-heap이란?**
+> 💡 **off-heap이란?**
 >
 > JVM의 heap 메모리가 아닌 JVM 외부의 메모리에 데이터를 저장하는 방식이다.
 
@@ -87,17 +87,15 @@ for (SmsMessage smsMessage : smsFetcherQueue.values()) {
 }
 ```
 
-즉 문제는 GC 처리 속도가 아니었다. **GC가 해당 데이터를 수집 대상(unreachable)으로 아예 인식하지 못하고 있다는 것이다.**
+**❌** 문제는 GC 처리 속도가 아니었다. GC가 해당 데이터를 수집 대상(unreachable)으로 아예 인식하지 못하고 있다는 것이다. 즉 어딘가에서 계속 참조하고 있다는 뜻이었다.
 
 ---
 
-### 추측 #2 - ChronicleMap 내부에서 데이터를 참조하고 있다
+### 추측 #2 — ChronicleMap 내부에서 데이터를 참조하고 있다
 
-GC가 수집 대상으로 인식하지 못했다는 건 **어딘가에서 참조하고 있다**는 뜻이었다. ChronicleMap의 내부 동작을 다시 찾아보았다.
+ChronicleMap의 내부 동작을 다시 찾아보았다.
 
-### GC Root란?
-
-GC가 어떻게 **살아있는 객체**를 판단하는지 이해할 필요가 있었다.
+#### GC Root란?
 
 GC는 객체를 직접 하나씩 확인하는 게 아니라, **GC Root에서 출발해서 참조를 타고 이동**하며 도달 가능한 객체를 살아있는 것으로 판단한다.
 
@@ -116,7 +114,7 @@ GC Root의 종류:
 - 활성화된 **Thread** **(이번 케이스의 핵심!)**
 - JNI 참조
 
-### ChronicleMap은 내부적으로 ThreadLocal을 사용한다
+#### ChronicleMap은 내부적으로 ThreadLocal을 사용한다
 
 ChronicleMap의 소스코드(`VanillaChronicleMap.java`)를 보면 내부에 다음 필드가 존재한다.
 
@@ -124,33 +122,21 @@ ChronicleMap의 소스코드(`VanillaChronicleMap.java`)를 보면 내부에 다
 transient ThreadLocal<ContextHolder> cxt;
 ```
 
-`values()`로 역직렬화를 수행할 때 ChronicleMap은 내부적으로 이 ThreadLocal에 **MapEntry context를 저장**한다. 즉, 개발자가 명시적으로 ThreadLocal을 사용하지 않아도 라이브러리 내부에서 알아서 ThreadLocal에 context를 집어넣는 구조다.
+`values()`로 이터레이션을 수행할 때 ChronicleMap은 내부적으로 이 ThreadLocal에 **MapEntry context를 저장**한다. 즉, 개발자가 명시적으로 ThreadLocal을 사용하지 않아도 라이브러리 내부에서 알아서 ThreadLocal에 context를 집어넣는 구조다.
 
-```
-public IterationContext<K, V, R> iterationContext() {
-    return (IterationContext)this.i()  ← 여기서 i() 호출
-        .getContext(CompiledMapIterationContext.class, ...);
-}
-```
-
-```
+```java
 final ChainingInterface i() {
     ThreadLocal<ContextHolder> cxt = this.cxt;
-    if (cxt == null) {
-        throw new ChronicleHashClosedException(this);
-    } else {
-        ContextHolder contextHolder = (ContextHolder)cxt.get();
-        ChainingInterface iterationContext;
-        if (contextHolder == null) {
-            iterationContext = this.newIterationContext();
-            try {
-                contextHolder = new ContextHolder(iterationContext);
-                this.addContext(contextHolder);
-                cxt.set(contextHolder);  ← 여기서 ThreadLocal.set() ← context 저장
-                return iterationContext;
-            } ...
-        }
+    ...
+    ContextHolder contextHolder = (ContextHolder)cxt.get();
+    if (contextHolder == null) {
+        iterationContext = this.newIterationContext();
+        contextHolder = new ContextHolder(iterationContext);
+        this.addContext(contextHolder);
+        cxt.set(contextHolder);  // ← 여기서 ThreadLocal에 context 저장
+        return iterationContext;
     }
+    ...
 }
 ```
 
@@ -167,7 +153,11 @@ ThreadLocal<ContextHolder>에 context 저장
 GC가 아직 살아있는 객체로 판정 → 수집 불가
 ```
 
-### ChronicleMap에서 remove()를 해도 왜 해제가 안 됐을까
+**✅ 추측 #2 유력** — ChronicleMap이 내부적으로 ThreadLocal에 context를 저장하고 있었다. 그러면 `remove()`를 해도 왜 해제가 안 됐는지도 설명이 됐다.
+
+---
+
+### 추측 #3 — remove()를 해도 왜 해제가 안 됐을까
 
 `remove()`는 off-heap(ChronicleMap 저장소)에서 해당 엔트리를 삭제한다. 하지만 **이미 heap에 올라온 객체는 건드리지 않는다.**
 
@@ -178,27 +168,22 @@ values() 호출 순간
     → ThreadLocal context에 참조 저장  ← 이미 끝남
           ↓
 remove() 호출
-    → off-heap 엔트리 삭제? -> ㅇㅇ 삭제
-    → heap에 이미 올라온 객체 삭제?  → ㄴㄴ 그대로
-    → ThreadLocal이 여전히 참조 중?  → ㅇㅇ 그대로 참조함
+    → off-heap 엔트리 삭제? → ㅇㅇ 삭제
+    → heap에 이미 올라온 객체 삭제? → ㄴㄴ 그대로
+    → ThreadLocal이 여전히 참조 중? → ㅇㅇ 그대로 참조함
           ↓
 GC → "아직 살아있는 객체" 판정 → 수집 불가
 ```
 
 창고(off-heap)에서 물건을 꺼내 방(heap)에 쭉 늘어놓은 뒤 창고 목록만 지운 셈이다. 방에 늘어놓은 물건은 그대로인데 창고 정리만 된 것이다.
 
-### ThreadLocal cleanup에 대하여
+그렇다면 context가 ThreadLocal에 쌓이는 게 문제라면, **`close()`를 호출해주면 해결되지 않을까?**
 
-> 💡 **ThreadLocal Cleanup?**
->
-> ThreadLocalMap에서 key(ThreadLocal)가 GC됐지만 value는 강한 참조로 남아있는 엔트리를 청소하는 작업.
-> (value 데이터는 개발자가 직접 넣은 데이터라 GC가 함부로 수거할 수 없다고 함.)
+---
 
-ThreadLocalMap은 cleanup을 `set()`, `initialValue()`, `remove()` (← ThreadLocal의 remove) 호출 시에만 수행하고, **`get()`의 hot path(가장 빈번하게 호출되는 코드 경로)에서는 수행하지 않는다.**
+### 추측 #4 — context.close()를 호출하면 해결되지 않을까
 
-다만 이번 케이스에서 lazy cleanup 자체가 직접적인 원인은 아니었다. `while(true)`로 스레드가 종료되지 않으니 ThreadLocal의 key도 GC되지 않아 stale entry 자체가 생기지 않는 상황이었다.
-
-진짜 문제는 `values()`의 Iterator가 `AutoCloseable`을 구현하지 않아 **for-each 루프가 끝나도 `close()`가 호출되지 않는다**는 것이었다. `AbstractChronicleMap`의 `values()` 구현을 보면 이를 확인할 수 있다.
+`values()`의 Iterator를 살펴보니 문제가 있었다. `AbstractChronicleMap`의 `values()` 구현을 보면:
 
 ```java
 default Collection<V> values() {
@@ -218,20 +203,65 @@ default Collection<V> values() {
 }
 ```
 
-때문에 for-each 루프가 종료되어도 ThreadLocal에 저장된 context가 해제되지 않았다.
+`Iterator`가 `AutoCloseable`을 구현하지 않아 루프가 끝나도 `close()`가 호출될 방법이 없었다.
+
+그렇다면 `close()`를 호출할 수 있는 `forEach()`를 사용했다면 어땠을까? `forEachEntryWhile()`을 보면 `finally`에서 `close()`를 무조건 호출하는 구조다.
 
 ```java
-// ❌ close() 보장 안 됨 → ThreadLocal context 해제 안 됨
-for (SmsMessage smsMessage : smsFetcherQueue.values()) {
-    tpsLimiter.acquire();
-    smsFetcherQueue.remove(smsMessage.getMsgId());
-    // ... 처리 로직
+} finally {
+    if (c != null) {
+        c.close();  // ← 예외 여부와 관계없이 항상 close() 호출
+    }
 }
 ```
 
-ChronicleMap의 `remove()` 또한 off-heap 엔트리만 삭제할 뿐 ThreadLocal을 정리하지 않는다.
+**하지만 여기서 또 막혔다.** `CompiledMapIterationContext`의 `close()`를 직접 확인해보니:
 
-거기에 더해 해당 스레드는 `while(true)` 루프로 동작하는 구조였다. 프로그램 종료 전까지는 **스레드가 절대 종료되지 않기 때문에 ThreadLocal도 영원히 살아남고**, 거기에 매달린 SmsMessage 객체들도 GC가 끝내 수집하지 못했던 것이다.
+```java
+public void close() {
+    this.doCloseDelayedUpdateChecksum();
+    this.doCloseKeySearch();
+    ...
+    this.doCloseUsed();  // ← used = false, 락 해제
+    ...
+}
+
+public void doCloseUsed() {
+    if (this.usedInit()) {
+        this.used = false;
+        if (this.firstContextLockedInThisThread) {
+            this.rootContextInThisThread.unlockContextLocally();
+        }
+    }
+}
+```
+
+`context.close()`는 내부 리소스와 락을 해제할 뿐, **ThreadLocal에서 context 참조를 제거하지 않는다.**
+
+ThreadLocal의 `cxt` 필드가 실제로 null이 되는 건 `VanillaChronicleMap`의 `cleanupOnClose()`에서다.
+
+```java
+protected void cleanupOnClose() {
+    super.cleanupOnClose();
+    ...
+    this.cxt = null;  // ← map.close() 호출 시에만 null
+}
+```
+
+즉 `cxt`가 null이 되는 건 **맵 자체가 완전히 닫힐 때**뿐이었다.
+
+```
+VanillaChronicleMap
+  └── cxt (null이 아닌 이상 계속 살아있음)
+        └── ThreadLocalMap의 key로 사용됨
+              └── value (ContextHolder → SmsMessage 참조들)
+                                                ↑
+                                         GC 수집 불가
+```
+
+**❌** `forEach()`로 `close()`를 호출해도 ThreadLocal 참조는 계속되는 것이었다. 결국 `map.close()`가 호출되기 전까지는 어떤 방식으로 이터레이션하든 메모리 누수는 피할 수 없는 구조였다.
+
+거기에 더해 해당 스레드는 `while(true)` 루프로 동작하는 구조였다. 프로그램 종료 전까지는 **스레드가 절대 종료되지 않고, 맵도 닫히지 않기 때문에** ThreadLocal도 영원히 살아남고, 거기에 매달린 SmsMessage 객체들도 GC가 끝내 수집하지 못했던 것이다.
 
 ```
 Sender Thread-1 (while(true), 종료 없음)
@@ -246,19 +276,19 @@ Sender Thread-2 (while(true), 종료 없음)
 ... × N 스레드
 ```
 
-추가로 `context.close()`를 호출하더라도 내부 리소스와 락을 해제할 뿐, ThreadLocal에서 context 참조를 제거하지는 않는다. 소스코드를 확인해보니 ThreadLocal이 실제로 null이 되는 건 `map.close()`, 즉 **맵 자체가 완전히 닫힐 때**뿐이었다. 결국 어떤 방식으로 이터레이션하든 스레드가 살아있는 한 메모리 누수는 피할 수 없는 구조였던 것이다. (파도파도 끝이 없다..)
-
-이것이 데이터 유입을 멈추고 수십 분이 지나도 메모리가 줄어들지 않았던 실제 이유라고 생각한다.
+이것이 데이터 유입을 멈추고 수십 분이 지나도 메모리가 줄어들지 않았던 실제 이유라고 생각한다. (파도파도 끝이 없다..)
 
 ---
 
 ## 결론
 
-| 의심 원인                         | 실제 여부         | 설명                                                                                                                                    |
-| --------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| off-heap 방식 자체의 문제         | ❌ 직접 원인 아님 | off-heap이 역직렬화의 소스였지만 직접 원인은 아님                                                                                       |
-| GC 처리 속도 부족                 | ❌ 직접 원인 아님 | 속도가 아니라 수집 대상 인식 자체가 안 됨                                                                                               |
-| **ChronicleMap 내부 ThreadLocal** | ✅ 원인(추측)     | values() 호출 시 내부 ThreadLocal에 context가 저장되고, 이터레이션 후 명시적 해제 없이 스레드가 종료되지 않아 GC가 영구적으로 수집 불가 |
+| 의심 원인                             | 실제 여부         | 설명                                                                                         |
+| ------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------- |
+| off-heap 방식 자체의 문제             | ❌ 직접 원인 아님 | off-heap이 역직렬화의 소스였지만 직접 원인은 아님                                            |
+| GC 처리 속도 부족                     | ❌ 직접 원인 아님 | 속도가 아니라 수집 대상 인식 자체가 안 됨                                                    |
+| ChronicleMap의 remove()               | ❌ 직접 원인 아님 | off-heap만 삭제, heap에 올라온 객체는 건드리지 않음                                          |
+| context.close() 미호출                | ⚠️ 부분 원인      | for-each로는 close() 호출 불가, 하지만 호출해도 ThreadLocal 참조는 남음                      |
+| **map.close() 전까지 cxt null 안 됨** | ✅ 핵심 원인      | while(true)로 맵이 닫히지 않는 한 ThreadLocal 참조가 끊어지지 않아 GC가 영구적으로 수집 불가 |
 
 ChronicleMap은 **대용량 데이터를 오래 보관**하는 시나리오에 적합한 구조였던 것 같다. 이 프로그램처럼 빠르게 put/remove하면서 `values()`로 전체를 반복 스캔하는 패턴과는 처음부터 맞지 않았던 것이다.
 
