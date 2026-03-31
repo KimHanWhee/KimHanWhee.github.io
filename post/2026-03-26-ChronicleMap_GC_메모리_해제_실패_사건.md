@@ -290,6 +290,8 @@ Sender Thread-2 (while(true), 종료 없음)
 | context.close() 미호출                | ⚠️ 부분 원인      | for-each로는 close() 호출 불가, 하지만 호출해도 ThreadLocal 참조는 남음        |
 | **map.close() 전까지 cxt null 안 됨** | ✅ 핵심 원인      | 맵이 닫히지 않는 한 ThreadLocal 참조가 끊어지지 않아 GC가 영구적으로 수집 불가 |
 
+정리하면 `values()`는 context의 `close()`를 호출하지 않아 GC 대상이 되지 않아서 메모리가 해제되지 않았던 것도 맞고, 만약 `close()`를 호출했더라도 ChronicleMap의 cxt(ThreadLocal) 필드가 null이 되지 않는 한 계속 참조되어 GC 대상이 되지 않았을 것이다. 이중벽에 막혀버린 것이다.
+
 ChronicleMap은 **대용량 데이터를 오래 보관**하는 시나리오에 적합한 구조였던 것 같다. 이 프로그램처럼 빠르게 put/remove하면서 `values()`로 전체를 반복 스캔하는 패턴과는 처음부터 맞지 않았던 것이다.
 
 이렇게 ChronicleMap 내부 동작을 확인해보니 `BlockingQueue`와 `ConcurrentHashMap`으로 교체한 이후 문제가 사라진 이유도 명확해졌다. 데이터가 처음부터 heap에 있어 off-heap/heap 왕복 자체가 없고, ThreadLocal을 사용할 필요도 없이 heap에 할당된 참조만 반환하면 된다. GC가 모든 객체의 생명주기를 온전히 관리할 수 있는 구조였기 때문에 문제가 사라졌다고 생각한다.
