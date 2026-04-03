@@ -25,33 +25,6 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Contact", path: "/contact" },
 ];
 
-export const KEY_METRICS = [
-  {
-    label: "Monthly Traffic",
-    value: "3억+",
-    suffix: "건",
-    description: "안정적인 대용량 트래픽 처리",
-  },
-  {
-    label: "Enterprise Clients",
-    value: "50+",
-    suffix: "개사",
-    description: "주요 대기업 및 금융사",
-  },
-  {
-    label: "Uptime",
-    value: "99.9",
-    suffix: "%",
-    description: "무중단 배포 및 운영",
-  },
-  {
-    label: "Experience",
-    value: "5+",
-    suffix: "Years",
-    description: "백엔드 엔지니어링 경력",
-  },
-];
-
 export const PROJECTS: Project[] = [
   {
     id: "standard-networks",
@@ -96,7 +69,7 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
       { name: "JPA", icon: Globe },
       { name: "mybatis", icon: Globe },
       { name: "R2DBC", icon: Globe },
-      { name: "React & Redux", icon: Globe },
+      { name: "React", icon: Globe },
       { name: "Tailwind CSS" },
     ],
   },
@@ -116,11 +89,9 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
     items: [
       { name: "VSCode", icon: ShieldCheck },
       { name: "IntelliJ", icon: Terminal },
-      { name: "eclipse", icon: Code },
       { name: "Git/GithubDesktop", icon: Code },
       { name: "Notion", icon: Code },
       { name: "Slack", icon: Code },
-      { name: "Jira", icon: Code },
     ],
   },
 ];
