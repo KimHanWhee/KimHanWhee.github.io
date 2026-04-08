@@ -8,7 +8,8 @@
       "Bash(timeout:*)",
       "Bash(find:*)",
       "Bash(cd:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm i:*)"
     ]
   }
 }
