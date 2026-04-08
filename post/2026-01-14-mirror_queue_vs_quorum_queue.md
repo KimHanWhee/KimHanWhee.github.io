@@ -7,6 +7,8 @@ tags: ["Programming"]
 
 RabbitMQ 클러스터 환경에서 메시지 유실을 방지하기 위한 두 가지 주요 메시지 복제 방식인 Mirrored Queue와 Quorum Queue에 대해 알아보자.
 
+과거 RabbitMQ 클러스터를 구성할 일이 생겼다. 우리 시스템은 IDC 이중화 환경으로 운영되고 있었는데, 두 개의 IDC 중 하나가 통째로 다운되더라도 서비스는 계속 운영되어야 했다. RabbitMQ 서버는 IDC1에 2대, IDC2에 1대, 총 3개의 노드로 구성하였고, 처음에는 공식적으로 권장하는 Quorum Queue 도입을 시도했다. 하지만 우리 환경에서는 예상치 못한 문제가 있었고, 결국 다른 선택을 해야 했다. 그 과정에서 알아낸 Mirrored Queue와 Quorum Queue의 차이를 정리해보려고 한다.
+
 ## 왜 메시지 복제가 필요할까?
 
 RabbitMQ 클러스터를 **메타데이터**는 자동으로 모든 노드에 공유된다. 하지만 **실제 메시지**는 기본적으로 큐가 생성된 노드에만 저장된다.
@@ -183,4 +185,9 @@ rabbitmqadmin declare queue name=my-quorum-queue durable=true \\
 
 ## 결론
 
-**현재는 무조건 Quorum Queue 사용을 권장**한다고 한다. Mirrored Queue는 RabbitMQ 팀에서도 더 이상 권장하지 않는다고 하며, 향후 버전에서는 제거될 가능성이 높아 보인다.
+일반적으로는 Quorum Queue 사용을 권장한다. Mirrored Queue는 RabbitMQ 팀에서도 더 이상 권장하지 않으며, 향후 버전에서는 제거될 가능성이 높다고 한다.
+
+하지만 우리 환경에서는 Quorum Queue를 선택할 수 없었다. Quorum Queue는 과반수 정책을 기반으로 동작하기 때문에, IDC1(2노드)이 다운되면 전체 3노드 중 과반수를 잃게 되어 RabbitMQ 자체가 동작을 멈춰버렸다. IDC 이중화의 핵심 목적인 "하나의 IDC가 다운돼도 서비스가 동작해야 한다"를 달성할 수 없었던 것이다.
+
+결국 Deprecated임에도 불구하고 Mirror Queue를 선택했다. Mirror Queue는 Primary 노드만 살아있으면 동작하기 때문에, IDC1이 통째로 다운되더라도 IDC2의 노드가 새로운 Primary로 승격되어 서비스를 이어갈 수 있었다.
+Quorum Queue 사용을 권장하긴 하지만, 상황에 따라 Mirrored Queue를 선택해야하는 상황이 올 수 있으니, 환경에 따라 적절한 선택이 필요한 것 같다.

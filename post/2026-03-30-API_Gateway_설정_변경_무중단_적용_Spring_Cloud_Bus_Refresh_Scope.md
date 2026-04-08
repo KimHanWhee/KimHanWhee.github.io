@@ -2,7 +2,7 @@
 title: "API Gateway 설정 변경 무중단 적용 - Spring Cloud Bus + RefreshScope"
 date: "2026-03-30"
 description: "트러블슈팅 - Spring Cloud API Gateway API 추가 시 재기동으로 인한 순단"
-tags: ["트러블슈팅", "Java", "Spring Boot", "Spring Cloud"]
+tags: ["트러블슈팅", "Spring Boot", "Spring Cloud", "MSA"]
 ---
 
 > "이 글은 2025년에 겪었던 트러블슈팅을 정리한 글이다."
