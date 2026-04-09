@@ -1,7 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
-import { getPost } from "../utils/posts";
-import { ArrowLeft, Calendar, Tag, ChevronUp } from "lucide-react";
+import { getPost, loadPosts } from "../utils/posts";
+import { BlogPost as BlogPostType } from "../types";
+import {
+  ArrowLeft,
+  Calendar,
+  Tag,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Giscus from "@/components/Giscus";
 
 interface Heading {
@@ -99,6 +107,91 @@ const TableOfContents: React.FC<{ headings: Heading[] }> = ({ headings }) => {
   );
 };
 
+const PAGE_SIZE = 3;
+
+const OtherPosts: React.FC<{ currentId: string }> = ({ currentId }) => {
+  const all = loadPosts();
+  const allPosts = all.filter((p) => p.id !== currentId);
+  // 현재 글 기준으로 가장 가까운 글들이 있는 페이지를 초기값으로
+  const currentIndex = all.findIndex((p) => p.id === currentId);
+  const neighborIndex = all
+    .filter((p) => p.id !== currentId)
+    .findIndex((_, i) => i >= Math.max(0, currentIndex - 1));
+  const [page, setPage] = useState(
+    Math.max(0, Math.floor(Math.max(0, neighborIndex) / PAGE_SIZE)),
+  );
+  const totalPages = Math.ceil(allPosts.length / PAGE_SIZE);
+  const pagePosts = allPosts.slice(
+    page * PAGE_SIZE,
+    page * PAGE_SIZE + PAGE_SIZE,
+  );
+
+  if (allPosts.length === 0) return null;
+
+  return (
+    <div className="mt-16 pt-10 border-t border-slate-100">
+      <h2 className="text-lg font-bold text-primary mb-6">다른 글 보기</h2>
+      <ul className="space-y-3">
+        {pagePosts.map((post) => (
+          <li key={post.id}>
+            <Link
+              to={`/blog/${post.id}`}
+              className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 p-4 rounded-xl border border-slate-100 hover:border-secondary/30 hover:bg-slate-50 transition-colors group"
+            >
+              <span className="font-mono text-xs text-slate-400 shrink-0">
+                {post.date}
+              </span>
+              <span className="font-semibold text-slate-700 group-hover:text-secondary transition-colors line-clamp-1 flex-1">
+                {post.title}
+              </span>
+              <div className="flex gap-1.5 flex-wrap">
+                {post.tags?.slice(0, 2).map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-500"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </Link>
+          </li>
+        ))}
+      </ul>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:border-secondary/40 hover:text-secondary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-sm text-slate-500 font-mono">
+            {page + 1} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page === totalPages - 1}
+            className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:border-secondary/40 hover:text-secondary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
+      <div className="flex justify-center mt-6">
+        <Link
+          to="/blog"
+          className="px-8 py-3 bg-primary text-white font-bold rounded-lg hover:bg-sky-500 transition-colors shadow-lg shadow-slate-900/20"
+        >
+          목록으로 돌아가기
+        </Link>
+      </div>
+    </div>
+  );
+};
+
 const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const post = id ? getPost(id) : undefined;
@@ -142,7 +235,7 @@ const BlogPost: React.FC = () => {
             </div>
             <div className="hidden sm:block w-px h-4 bg-slate-300"></div>
             <div className="flex items-center gap-3 flex-wrap">
-              {post.tags.map((tag) => (
+              {post.tags?.map((tag) => (
                 <span
                   key={tag}
                   className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white border border-slate-200 text-slate-700 shadow-sm"
@@ -206,21 +299,18 @@ const BlogPost: React.FC = () => {
           </article>
         </div>
 
+        {/* 다른 글 보기 */}
+        {id && <OtherPosts currentId={id} />}
+
         {/* Footer Navigation */}
-        <div className="mt-20 pt-10 border-t border-slate-100 flex flex-col items-center">
+        <div className="mt-10 flex flex-col items-center">
           <button
             onClick={scrollToTop}
-            className="mb-8 p-3 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-secondary transition-colors"
+            className="p-3 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-secondary transition-colors"
             aria-label="Scroll to top"
           >
             <ChevronUp size={24} />
           </button>
-          <Link
-            to="/blog"
-            className="px-8 py-3 bg-primary text-white font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20"
-          >
-            다른 글 보러가기
-          </Link>
         </div>
       </div>
       <Giscus term={id} />

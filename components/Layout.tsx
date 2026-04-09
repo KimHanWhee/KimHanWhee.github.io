@@ -34,7 +34,7 @@ const Layout: React.FC = () => {
                 `text-[15px] font-medium transition-colors ${
                   isActive
                     ? "text-slate-900 font-bold bg-gradient-to-r from-sky-200 to-sky-100 px-3 py-1 rounded-sm -skew-x-3"
-                    : "text-slate-500 hover:text-slate-900"
+                    : "text-slate-500 hover:text-sky-500 hover:scale-110 transition-all duration-200"
                 }`
               }
             >
@@ -96,7 +96,7 @@ const Layout: React.FC = () => {
 
       {/* Minimal Footer */}
       <footer className="w-full max-w-3xl mx-auto px-6 py-10 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
-        <div>© 2026 Hanwhee Kim.</div>
+        <div>© {new Date().getFullYear()} Hanwhee Kim.</div>
         <div className="flex gap-4">
           <a
             href="https://github.com/KimHanWhee"
