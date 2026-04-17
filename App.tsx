@@ -42,7 +42,7 @@ const LoadingScreen: React.FC<{ visible: boolean }> = ({ visible }) => {
           😎
         </span>
         <div
-          className="w-10 h-2 bg-slate-400 rounded-full blur-sm mt-1"
+          className="w-10 h-2 bg-slate-900 rounded-full blur-sm mt-1"
           style={{
             animation: "emoji-shadow 2s cubic-bezier(0.8,0,1,1) infinite",
           }}
