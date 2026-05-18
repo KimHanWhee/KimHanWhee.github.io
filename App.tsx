@@ -8,9 +8,14 @@ import Education from "./pages/Education";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Contact from "./pages/Contact";
+import img1 from "./image/dambi1-loading.png";
+import img2 from "./image/dambi2-loading.png";
+import img3 from "./image/dambi3-loading.png";
+import img4 from "./image/dambi4-loading.png";
 
 const LOADING_DURATION = 3000; // ms
 const DOT_INTERVAL = 400; // ms
+const images = [img1, img2, img3, img4];
 
 const LoadingScreen: React.FC<{ visible: boolean }> = ({ visible }) => {
   const [dotCount, setDotCount] = useState(0);
@@ -30,22 +35,12 @@ const LoadingScreen: React.FC<{ visible: boolean }> = ({ visible }) => {
         pointerEvents: visible ? "auto" : "none",
       }}
     >
-      {/* 이모티콘 + 그림자 */}
+      {/* 이미지 */}
       <div className="flex flex-col items-center mb-6">
-        <style>{`
-          @keyframes emoji-shadow {
-            0%, 100% { transform: scaleX(0.5); opacity: 0.15; }
-            50%       { transform: scaleX(1);   opacity: 0.35; }
-          }
-        `}</style>
-        <span className="text-5xl inline-block animate-[bounce_2s_infinite] select-none">
-          😎
-        </span>
-        <div
-          className="w-10 h-2 bg-slate-900 rounded-full blur-sm mt-1"
-          style={{
-            animation: "emoji-shadow 2s cubic-bezier(0.8,0,1,1) infinite",
-          }}
+        <img
+          src={images[dotCount] ?? images[0]}
+          alt="loading"
+          className="w-20 h-20 object-contain"
         />
       </div>
 
