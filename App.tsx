@@ -40,7 +40,7 @@ const LoadingScreen: React.FC<{ visible: boolean }> = ({ visible }) => {
         <img
           src={images[dotCount] ?? images[0]}
           alt="loading"
-          className="w-20 h-20 object-contain"
+          className="w-30 h-30 object-contain"
         />
       </div>
 
