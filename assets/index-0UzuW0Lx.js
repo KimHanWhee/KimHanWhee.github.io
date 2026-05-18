@@ -2823,7 +2823,7 @@ GC가 아직 살아있는 객체로 판정 → 수집 불가
 
 ---
 
-### 추측 #3 - remove()를 해도 왜 해제가 안 됐을까
+### remove()를 해도 왜 해제가 안 됐을까?
 
 \`remove()\`는 off-heap(ChronicleMap 저장소)에서 해당 엔트리를 삭제한다. 하지만 **이미 heap에 올라온 객체는 건드리지 않는다.**
 
@@ -2847,7 +2847,7 @@ GC → "아직 살아있는 객체" 판정 → 수집 불가
 
 ---
 
-### 추측 #4 - context.close()를 호출하면 해결되지 않을까
+### context.close()를 호출하면 해결되지 않을까?
 
 \`values()\`의 Iterator를 살펴보니 문제가 있었다. \`AbstractChronicleMap\`의 \`values()\` 구현을 보면:
 
